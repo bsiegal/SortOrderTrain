@@ -1,0 +1,64 @@
+#container, #game {
+    font-size: 14px;
+    width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#title {
+    position: relative;
+    text-align: center;
+    margin-bottom: 2px;
+}
+
+.title {
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+}
+
+#instruct {
+    position: relative;
+}
+
+canvas {
+    border: 1px solid lightgray;
+}
+    
+button/*, select, select > option*/ {
+    padding: 0px 15px 0px;
+}
+
+.rightMenu {
+    position: absolute;
+    right: 0px;
+    top: 0px;
+}
+
+#title .rightMenu {
+    top: 4px;
+}
+
+#about {
+    position: absolute;
+    right: 0px;
+    z-index: 2;
+    background-color: white; 
+    border: thin solid darkgray;
+    -moz-border-radius: 10px; 
+    -webkit-border-radius: 10px; 
+    border-radius: 10px;
+    -moz-box-shadow: 10px 10px 5px #888;
+    -webkit-box-shadow: 10px 10px 5px #888;
+    box-shadow: 10px 10px 5px #888;    
+    padding: 10px;
+    width: 500px;
+    text-align: left;
+}
+
+h1 {  
+}
+
+a {
+    text-decoration: none;
+    font-style: italic;
