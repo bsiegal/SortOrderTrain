@@ -392,15 +392,7 @@ var SortOrderTrain = {
             height: 100
         });
         layer.add(gravel);
-        
-        var imageObj = new Image();
-        imageObj.onload = function(){
-            var pattern = context.createPattern(imageObj, "repeat");
-                 
-            gravel.setFill(pattern);
-            layer.draw();
-        };
-        imageObj.src = "320px-Gravel_small_stones.jpg";
+
                         
         /*
          * hills and tracks
@@ -422,9 +414,9 @@ var SortOrderTrain = {
             x: 0,
             y: 300,
             width: 1000,
-            height: 4,
+            height: 2,
             stroke: 'black',
-            fill: '#e1e1e1'
+            strokeWidth: 1
         });        
         layer.add(track1);
 
@@ -432,8 +424,8 @@ var SortOrderTrain = {
             drawFunc: function(){
                 var context = this.getContext();
                 context.beginPath();
-                context.moveTo(600, 400);
-                context.quadraticCurveTo(700, 0, 900, 400);
+                context.moveTo(600, 370);
+                context.quadraticCurveTo(700, 0, 900, 370);
                 context.closePath(); // complete custom shape
                 this.fillStroke();  
             },
@@ -443,11 +435,11 @@ var SortOrderTrain = {
                 
         var track2 = new Kinetic.Rect({
             x: 0,
-            y: 400,
+            y: 370,
             width: 1000,
-            height: 4,
+            height: 3,
             stroke: 'black',
-            fill: '#e1e1e1'
+            strokeWidth: 2
         });        
         layer.add(track2);
 
@@ -470,13 +462,30 @@ var SortOrderTrain = {
             width: 1000,
             height: 4,
             stroke: 'black',
-            fill: '#e1e1e1'
+            strokeWidth: 3
         });        
         layer.add(track3);
+        
+        /*
+         * gravel pattern for gravel and tracks
+         */
+        var imageObj = new Image();
+        imageObj.onload = function() {
+            var pattern = context.createPattern(imageObj, "repeat");
+                 
+            gravel.setFill(pattern);
+            track1.setFill(pattern);
+            track2.setFill(pattern);
+            track3.setFill(pattern);
+            
+            layer.draw();
+        };
+        imageObj.src = "320px-Gravel_small_stones.jpg";
         
 
         return SortOrderTrain.createLoco(layer);
     },
+    
     
     createLoco: function(/*Kinetic.Layer*/ layer) {
         var loco = new Kinetic.Group();
