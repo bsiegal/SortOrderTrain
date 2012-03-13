@@ -304,9 +304,13 @@ var SortOrderTrain = {
     
     createBackground: function(/*Kinetic.Layer*/ layer) {
         /*
+         * get context for color gradients and pattern
+         */
+        var context = layer.getContext();        
+        
+        /*
          * sky with color gradient
          */
-        var context = layer.getContext();
         
         var skyCanvasGradient = context.createLinearGradient(0, 0, 0, 300);
         skyCanvasGradient.addColorStop(0, '#004CB3'); // light blue
@@ -365,33 +369,39 @@ var SortOrderTrain = {
         /*
          * grass with color gradient
          */
-        var context = layer.getContext();
-        
-        var grassCanvasGradient = context.createLinearGradient(0, 0, 0, 500);
-        grassCanvasGradient.addColorStop(0, '#57e757'); // light green
-        grassCanvasGradient.addColorStop(1, '#117710'); // dark green
+        var grassCanvasGradient = context.createLinearGradient(0, 0, 0, 200);
+        grassCanvasGradient.addColorStop(0, '#57fb57'); // light green
+        grassCanvasGradient.addColorStop(1, '#2abf2a'); // dark green
         
         var grass = new Kinetic.Rect({
             x: 0,
             y: 300,
             width: 1000,
             height: 200,
-            fill: grassCanvasGradient,
+            fill: grassCanvasGradient
         });
         layer.add(grass);
 
         /*
-         * bg for parked box cars
+         * gravel for parked box cars
          */
-        var gray = new Kinetic.Rect({
+        var gravel = new Kinetic.Rect({
             x: 0,
             y: 500,
             width: 1000,
-            height: 100,
-            fill: '#e1e1e1',
+            height: 100
         });
-        layer.add(gray);
-                
+        layer.add(gravel);
+        
+        var imageObj = new Image();
+        imageObj.onload = function(){
+            var pattern = context.createPattern(imageObj, "repeat");
+                 
+            gravel.setFill(pattern);
+            layer.draw();
+        };
+        imageObj.src = "320px-Gravel_small_stones.jpg";
+                        
         /*
          * hills and tracks
          */
@@ -404,7 +414,7 @@ var SortOrderTrain = {
                 context.closePath(); // complete custom shape
                 this.fillStroke();  
             },
-            fill: 'greenyellow'
+            fill: '#57fb57'
         });
         layer.add(hill1);
         
@@ -427,7 +437,7 @@ var SortOrderTrain = {
                 context.closePath(); // complete custom shape
                 this.fillStroke();  
             },
-            fill: 'lightgreen'
+            fill: '#1fd91f'
         });
         layer.add(hill2);
                 
@@ -450,7 +460,7 @@ var SortOrderTrain = {
                 context.closePath(); // complete custom shape
                 this.fillStroke();  
             },
-            fill: 'green'
+            fill: '#2abf2a'
         });
         layer.add(hill3);
         
