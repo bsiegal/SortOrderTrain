@@ -44,7 +44,7 @@ function BoxCar(/*int*/ x, /*int*/ y, /*Kinetic.Layer*/ layer, /*Number or Alpha
     this.layer = layer;
     this.x = x;
     this.y = y;
-    this.value = value;
+    this.value = value === '?' ? [] : [value]; //array because outlines might have more than 1 value if 1+ boxcars are on it
     
     this.init = function() {
         var group = new Kinetic.Group();
@@ -101,7 +101,7 @@ function BoxCar(/*int*/ x, /*int*/ y, /*Kinetic.Layer*/ layer, /*Number or Alpha
             stroke: otherFill,
             strokeWidth: 2,
             fill: '#F9F9F9',
-            text: this.value,
+            text: value,
             fontSize: 20,
             fontFamily: 'Calibri',
             textFill: '#888',
@@ -137,6 +137,7 @@ function BoxCar(/*int*/ x, /*int*/ y, /*Kinetic.Layer*/ layer, /*Number or Alpha
                 document.body.style.cursor = 'default';
             });      
             
+            var thiz = this;            
             /*
              * remove group from the layer and add it to the
              * animatedLayer.  This will improve performance
@@ -145,6 +146,18 @@ function BoxCar(/*int*/ x, /*int*/ y, /*Kinetic.Layer*/ layer, /*Number or Alpha
              * on the boxLayer until dragend
              */
             group.on('mousedown touchstart', function(){
+                /*
+                 * First clear this value from all outlines that might have it
+                 */
+                var value = thiz.value[0];
+                for (var i = 0; i < SortOrderTrain.outlns.length; i++) {
+                    for (var j = 0; j < SortOrderTrain.outlns[i].value.length; j++) {
+                        if (SortOrderTrain.outlns[i].value[j] === value) {
+                            SortOrderTrain.outlns[i].value.splice(j, 1);
+                        }
+                    }
+                }
+                
                 var layer = this.getLayer();
                 group.moveTo(SortOrderTrain.animatedLayer);
                 group.draggable(true);
@@ -158,7 +171,6 @@ function BoxCar(/*int*/ x, /*int*/ y, /*Kinetic.Layer*/ layer, /*Number or Alpha
              * from the animatedLayer and add it back to the boxLayer.
              * Turn event listening back on for the boxLayer
              */
-            var thiz = this;
             group.on('dragend', function(){
                 group.moveTo(thiz.layer);
                 group.draggable(false);
@@ -186,7 +198,9 @@ function BoxCar(/*int*/ x, /*int*/ y, /*Kinetic.Layer*/ layer, /*Number or Alpha
                  */
                 var allGood = true;
                 for (var i = 0; i < SortOrderTrain.outlns.length; i++) {
-                    if (SortOrderTrain.outlns[i].value !== SortOrderTrain.answers[i]) {
+                    if (SortOrderTrain.outlns[i].value.length !== 1 || SortOrderTrain.outlns[i].value[0] !== SortOrderTrain.answers[i]) {
+                        console.log('not equal! for i = ' + i + ' -- SortOrderTrain.outlns[i].value  =  ' + SortOrderTrain.outlns[i].value[0]);
+                        console.log('SortOrderTrain.answers[i] = ' + SortOrderTrain.answers[i]);
                         allGood = false;
                         break;
                     }
@@ -648,7 +662,7 @@ var SortOrderTrain = {
          * doesn'tt seem to work and instead return relative to original position.
          */
         var a = boxcar.group.getChild('box').getAbsolutePosition();
-        console.log(a);
+
         for (var i = 0; i < SortOrderTrain.outlns.length; i++) {
             console.log('a.x = ' + a.x + ', a.y = ' + a.y);
             var o = SortOrderTrain.outlns[i];
@@ -663,7 +677,8 @@ var SortOrderTrain = {
                 /*
                  * set the value of the outline to this box car's value
                  */
-                o.value = boxcar.value;
+                o.value.push(boxcar.value[0]);
+                console.log('outline[' + i + '].value pushed ' + boxcar.value[0]);
                 return vector;
             }
         }
