@@ -140,7 +140,7 @@ function BoxCar(/*int*/ x, /*int*/ y, /*Kinetic.Layer*/ layer, /*Number or Alpha
             var thiz = this;            
             /*
              * remove group from the layer and add it to the
-             * animatedLayer.  This will improve performance
+             * topLayer.  This will improve performance
              * because only one box car will be redrawn for each frame
              * and not everything.  Also, turn off event listening
              * on the boxLayer until dragend
@@ -159,16 +159,16 @@ function BoxCar(/*int*/ x, /*int*/ y, /*Kinetic.Layer*/ layer, /*Number or Alpha
                 }
                 
                 var layer = this.getLayer();
-                group.moveTo(SortOrderTrain.animatedLayer);
+                group.moveTo(SortOrderTrain.topLayer);
                 group.draggable(true);
                 layer.listen(false);
                 layer.draw();
-                SortOrderTrain.animatedLayer.draw();
+                SortOrderTrain.topLayer.draw();
             });
 
             /*
              * when the drag operation is completed, remove the gropu
-             * from the animatedLayer and add it back to the boxLayer.
+             * from the topLayer and add it back to the boxLayer.
              * Turn event listening back on for the boxLayer
              */
             group.on('dragend', function(){
@@ -188,7 +188,7 @@ function BoxCar(/*int*/ x, /*int*/ y, /*Kinetic.Layer*/ layer, /*Number or Alpha
                     
                 }
                 thiz.layer.draw();
-                SortOrderTrain.animatedLayer.draw();
+                SortOrderTrain.topLayer.draw();
                 
                 /*
                  * If all the outline values match
@@ -209,6 +209,8 @@ function BoxCar(/*int*/ x, /*int*/ y, /*Kinetic.Layer*/ layer, /*Number or Alpha
                     SortOrderTrain.loco.moveTo(SortOrderTrain.boxLayer);
                     SortOrderTrain.bgLayer.draw();
                     
+                    thiz.layer.listen(false);
+                    SortOrderTrain.track = 'track3';
                     SortOrderTrain.stage.start();                                    
                 }
                 
@@ -226,7 +228,7 @@ var SortOrderTrain = {
     /* int level (default to lowest) */
     level: 5, 
     /* the Kinetic.Layer to move things around on */
-    animLayer: null,
+    topLayer: null,
     /* Kinetic.Layer to be the background */
     bgLayer: null, 
     /* Kinetic.Layer for the box cars */
@@ -239,6 +241,10 @@ var SortOrderTrain = {
     answers: [],
     /* Kinetic.Group of shapes that make the locomotive */
     loco: null,
+    /* Kinetic.Shape of the front most hill */
+    hill3: null,
+    /* Kinetic.Shape of the hill by the middle track */
+    hill2: null,
     
     init: function() {
         SortOrderTrain.setMode();
@@ -272,24 +278,11 @@ var SortOrderTrain = {
          * Create the layer the layer where things move
          * and add to stage
          */
-        SortOrderTrain.animatedLayer = new Kinetic.Layer();
-        stage.add(SortOrderTrain.animatedLayer);
+        SortOrderTrain.topLayer = new Kinetic.Layer();
+        stage.add(SortOrderTrain.topLayer);
         
         stage.onFrame(function(frame){
-            SortOrderTrain.loco.x -= 1/2 * SortOrderTrain.level;
-            
-            for (var i = 0; i < SortOrderTrain.cars.length; i++) {
-                SortOrderTrain.cars[i].group.x -= 1/2 * SortOrderTrain.level;               
-                SortOrderTrain.outlns[i].group.x -= 1/2 * SortOrderTrain.level; //move the outlines, too, for stop condition
-            }
-            SortOrderTrain.boxLayer.draw();
-            
-            if (SortOrderTrain.outlns[SortOrderTrain.outlns.length - 1].group.getChild('box').getAbsolutePosition().x + BOX_WIDTH < 0) {  
-                SortOrderTrain.stage.stop();
-                
-                SortOrderTrain.loco.moveTo(SortOrderTrain.bgLayer);
-                SortOrderTrain.reInit();
-            }
+            SortOrderTrain.animateTrain();
         });
        
     },    
@@ -432,6 +425,7 @@ var SortOrderTrain = {
             fill: '#1fd91f'
         });
         layer.add(hill2);
+        SortOrderTrain.hill2 = hill2;        
                 
         var track2 = new Kinetic.Rect({
             x: 0,
@@ -455,6 +449,7 @@ var SortOrderTrain = {
             fill: '#2abf2a'
         });
         layer.add(hill3);
+        SortOrderTrain.hill3 = hill3;
         
         var track3 = new Kinetic.Rect({
             x: 0,
@@ -724,11 +719,99 @@ var SortOrderTrain = {
         SortOrderTrain.level = lvl;
     },
 
+    animateTrain: function() {
+        /*
+         * Move the loco, outlines, and box cars.
+         * It would be nice if they were all in a group
+         * and moved together, but sometimes outline
+         * shows on top of the box car, even after the boxcar has moveToTop.
+         * Moving each separately for now.
+         */
+        var dx = SortOrderTrain.track === 'track3' ? -1.5 : SortOrderTrain.track === 'track2' ? 1 : -0.5;
+        dx = dx * SortOrderTrain.level
+        SortOrderTrain.moveTrain(dx);
+    },
+    
+    moveTrain: function(/*int*/ dx) {
+        var track = SortOrderTrain.track;
+        console.log('moveTrain dx = ' + dx + ', track = ' + track);
+        SortOrderTrain.loco.x += dx;
+        
+        for (var i = 0; i < SortOrderTrain.cars.length; i++) {
+            SortOrderTrain.cars[i].group.x += dx;               
+            SortOrderTrain.outlns[i].group.x += dx; //move the outlines, too, for stop condition
+        }
+        SortOrderTrain.boxLayer.draw();
+        
+        if (track === 'track3' && SortOrderTrain.outlns[SortOrderTrain.outlns.length - 1].group.getChild('box').getAbsolutePosition().x + BOX_WIDTH < 0) {  
+            console.log('stop condition for track3 met');
+            /*
+             * it has finished track 3, move to track2
+             */
+            SortOrderTrain.stage.stop();
+            SortOrderTrain.hill3.moveTo(SortOrderTrain.topLayer);
+            SortOrderTrain.topLayer.draw();
+            SortOrderTrain.bgLayer.draw();
+            
+            SortOrderTrain.track = 'track2';
+            SortOrderTrain.changeTrack();
+            SortOrderTrain.stage.start();
+        } else if (track === 'track2' && SortOrderTrain.loco.getAbsolutePosition().x > 1000) {// && SortOrderTrain.outlns[SortOrderTrain.outlns.length - 1].group.getChild('box').getAbsolutePosition().x > 1000) {
+            console.log('stop condition for track2 met');
+            /*
+             * it has finished track 2, move to track1
+             */
+            SortOrderTrain.stage.stop();
+            SortOrderTrain.hill2.moveTo(SortOrderTrain.topLayer);
+            SortOrderTrain.topLayer.draw();
+            SortOrderTrain.bgLayer.draw();
+            
+            SortOrderTrain.track = 'track1';           
+            SortOrderTrain.changeTrack();
+            SortOrderTrain.stage.start();
+        } else if (track === 'track1' && SortOrderTrain.outlns[SortOrderTrain.outlns.length - 1].group.getChild('box').getAbsolutePosition().x + BOX_WIDTH < 0) {
+            console.log('stop condition for track1 met');
+            SortOrderTrain.stage.stop();
+            
+            SortOrderTrain.hill3.moveTo(SortOrderTrain.bgLayer);
+            SortOrderTrain.hill2.moveTo(SortOrderTrain.bgLayer);
+            SortOrderTrain.topLayer.draw();
+            
+            SortOrderTrain.loco.setScale(1);
+            SortOrderTrain.loco.moveTo(SortOrderTrain.bgLayer);
+            SortOrderTrain.reInit();
+        }
+        
+    },
+    
+    changeTrack: function() {
+        if (SortOrderTrain.track === 'track2') {
+            scale = 0.74;
+        } else if (SortOrderTrain.track === 'track1'){
+            scale = 0.60;
+        } else {
+            scale = 1;
+        }
+        console.log('changeTrack: track = ' + SortOrderTrain.track + '; scale =' + scale);
+        //SortOrderTrain.loco.y -= dy;
+        SortOrderTrain.loco.setScale(scale);
+
+        for (var i = 0; i < SortOrderTrain.cars.length; i++) {
+            //SortOrderTrain.cars[i].group.y -= dy;               
+            SortOrderTrain.cars[i].group.setScale(scale);
+            //SortOrderTrain.outlns[i].group.y -= dy; //move the outlines, too, for stop condition
+            SortOrderTrain.outlns[i].group.setScale(scale);
+        }
+        
+    },
+    
     reInit: function() {
         /*
-         * stop animation, if any
+         * stop animation, if any,
+         * and let the boxLayer listen again
          */
         SortOrderTrain.stage.stop();
+        SortOrderTrain.boxLayer.listen(true);
         /*
          * clear the box layer and remove all place holder outlines and box cars
          */
