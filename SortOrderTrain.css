@@ -12,21 +12,19 @@
 }
 
 .title {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: bold;
     text-align: center;
 }
 
 #instruct {
-    position: relative;
+    text-align: center;
 }
 
-canvas {
-    border: 1px solid lightgray;
-}
     
-button/*, select, select > option*/ {
-    padding: 0px 15px 0px;
+select {
+    padding: 5px;
+    font-size: 16px;
 }
 
 .rightMenu {
