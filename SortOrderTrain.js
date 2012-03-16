@@ -185,7 +185,7 @@ function BoxCar(/*int*/ x, /*int*/ y, /*Kinetic.Layer*/ layer, /*Number or Alpha
                  */
                 var vector = SortOrderTrain.checkOutline(thiz);
                 if (vector) {
-                    console.log("nudged by =" + vector.x + ", " + vector.y);
+                    if (console && console.log) console.log("nudged by =" + vector.x + ", " + vector.y);
 
                     group.x += vector.x;
                     group.y += vector.y;
@@ -203,8 +203,8 @@ function BoxCar(/*int*/ x, /*int*/ y, /*Kinetic.Layer*/ layer, /*Number or Alpha
                 var allGood = true;
                 for (var i = 0; i < SortOrderTrain.outlns.length; i++) {
                     if (SortOrderTrain.outlns[i].value.length !== 1 || SortOrderTrain.outlns[i].value[0] !== SortOrderTrain.answers[i]) {
-                        console.log('not equal! for i = ' + i + ' -- SortOrderTrain.outlns[i].value  =  ' + SortOrderTrain.outlns[i].value[0]);
-                        console.log('SortOrderTrain.answers[i] = ' + SortOrderTrain.answers[i]);
+                        if (console && console.log) console.log('not equal! for i = ' + i + ' -- SortOrderTrain.outlns[i].value  =  ' + SortOrderTrain.outlns[i].value[0]);
+                        if (console && console.log) console.log('SortOrderTrain.answers[i] = ' + SortOrderTrain.answers[i]);
                         allGood = false;
                         break;
                     }
@@ -679,7 +679,13 @@ var SortOrderTrain = {
         /*
          * sort the answers
          */
-        SortOrderTrain.answers.sort();
+        if (SortOrderTrain.mode === 'num') {
+            SortOrderTrain.answers.sort(function(a, b) {
+                return a - b;
+            });
+        } else {
+            SortOrderTrain.answers.sort();            
+        }
         
         return cars;
     },
@@ -696,9 +702,9 @@ var SortOrderTrain = {
         var a = boxcar.group.getChild('box').getAbsolutePosition();
 
         for (var i = 0; i < SortOrderTrain.outlns.length; i++) {
-            console.log('a.x = ' + a.x + ', a.y = ' + a.y);
+            if (console && console.log) console.log('a.x = ' + a.x + ', a.y = ' + a.y);
             var o = SortOrderTrain.outlns[i];
-            console.log('i = ' + i + ': o.x = ' + o.x + ', o.y = ' + o.y);
+            if (console && console.log) console.log('i = ' + i + ': o.x = ' + o.x + ', o.y = ' + o.y);
             if (a.x > o.x - 20 && a.x < o.x + 20 && a.y > o.y - 20 && a.y < o.y + 20) {
                 /*
                  * Create vector with the difference in locations
@@ -710,7 +716,7 @@ var SortOrderTrain = {
                  * set the value of the outline to this box car's value
                  */
                 o.value.push(boxcar.value[0]);
-                console.log('outline[' + i + '].value pushed ' + boxcar.value[0]);
+                if (console && console.log) console.log('outline[' + i + '].value pushed ' + boxcar.value[0]);
                 return vector;
             }
         }
@@ -761,7 +767,7 @@ var SortOrderTrain = {
         SortOrderTrain.boxLayer.draw();
         
         if (track === 'track3' && SortOrderTrain.outlns[SortOrderTrain.outlns.length - 1].group.getChild('box').getAbsolutePosition().x + BOX_WIDTH < 0) {  
-            console.log('stop condition for track3 met');
+            if (console && console.log) console.log('stop condition for track3 met');
             /*
              * it has finished track 3, move to track2
              */
@@ -774,7 +780,7 @@ var SortOrderTrain = {
             SortOrderTrain.changeTrack();
             SortOrderTrain.stage.start();
         } else if (track === 'track2'  && SortOrderTrain.loco.getAbsolutePosition().x  - SortOrderTrain.outlns.length * (BOX_WIDTH + HITCH_LENGTH) > 1000) {
-            console.log('stop condition for track2 met');
+            if (console && console.log) console.log('stop condition for track2 met');
             /*
              * it has finished track 2, move to track1
              */
@@ -787,15 +793,9 @@ var SortOrderTrain = {
             SortOrderTrain.changeTrack();
             SortOrderTrain.stage.start();
         } else if (track === 'track1' && SortOrderTrain.outlns[SortOrderTrain.outlns.length - 1].group.getChild('box').getAbsolutePosition().x + BOX_WIDTH < 0) {
-            console.log('stop condition for track1 met');
+            if (console && console.log) console.log('stop condition for track1 met');
             SortOrderTrain.stage.stop();
             
-            SortOrderTrain.hill3.moveTo(SortOrderTrain.bgLayer);
-            SortOrderTrain.hill2.moveTo(SortOrderTrain.bgLayer);
-            SortOrderTrain.topLayer.draw();
-            
-            SortOrderTrain.loco.setScale(1);
-            SortOrderTrain.loco.moveTo(SortOrderTrain.bgLayer);
             SortOrderTrain.reInit();
         }
         
@@ -863,6 +863,7 @@ var SortOrderTrain = {
          */
         SortOrderTrain.stage.stop();
         SortOrderTrain.boxLayer.listen(true);
+        
         /*
          * clear the box layer and remove all place holder outlines and box cars
          */
@@ -872,9 +873,15 @@ var SortOrderTrain = {
         SortOrderTrain.boxLayer.draw();
         
         /*
-         * put the loco back at original position
+         * put the hills back and
+         * put the loco back to original size, at original position
          * in the original layer
          */
+        SortOrderTrain.hill3.moveTo(SortOrderTrain.bgLayer);
+        SortOrderTrain.hill2.moveTo(SortOrderTrain.bgLayer);
+        SortOrderTrain.topLayer.draw();
+
+        SortOrderTrain.loco.setScale(1);
         SortOrderTrain.loco.moveTo(SortOrderTrain.bgLayer);
         SortOrderTrain.loco.setPosition(0, 0);
         SortOrderTrain.bgLayer.draw();

@@ -1,7 +1,7 @@
 Sort Order Train
 ==================================================
 
-This is a sort order game for kids created with [KineticJS](http://www.kineticjs.com/).  It can be played using any HTML5 browser, including on an iPad.  [KineticJS](http://www.kineticjs.com/) is so fast that there is no discernible difference in use between the iPad and a computer browser.  This project has simple examples of drawing pre-defined and custom shapes, fills using color, gradient or pattern, scaling, handling mouse, touch and drag events, using and moving groups around a layer and to and from different layers for optimal performance, and animation.
+This is a sort order game for kids created with [KineticJS](http://www.kineticjs.com/).  It can be played using any HTML5 browser, including on an iPad.  [KineticJS](http://www.kineticjs.com/) is so fast that the touch-drag on the iPad responds just as well as mouse-drag on a computer browser.  This project has simple examples of drawing pre-defined and custom shapes, fills using color, gradient or pattern, scaling, handling mouse, touch and drag events, using and moving groups around a layer and to and from different layers for optimal performance, and animation.
 
 How to play
 --------------------------------------
