@@ -16,8 +16,8 @@
  *
  ******************************************************************************/
 
-var COLORS = ['red', 'orange', 'yellow', 'purple', 'goldenrod', 'pink', 'cyan', 'teal', 'coral', 'gold', 'chocolate',
-              'khaki', 'lavender', 'lavenderblush', 'lightcyan', 'salmon', 'linen', 'darkred', 'crimson', 'magenta'];
+var COLORS = ['red', 'orange', 'yellow', 'purple', 'goldenrod', 'pink', 'coral', 'gold', 'chocolate',
+              'khaki', 'lavender', 'lavenderblush', 'salmon', 'linen', 'darkred', 'crimson', 'magenta'];
 var ALPHABET = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
 var NUMBERS = []; //initialized on ready
 var BOX_START = 150;
@@ -300,7 +300,7 @@ var SortOrderTrain = {
         stage.add(SortOrderTrain.topLayer);
         
         stage.onFrame(function(frame){
-            SortOrderTrain.animateTrain();
+            SortOrderTrain.animateTrain(frame);
         });
        
     },    
@@ -338,45 +338,66 @@ var SortOrderTrain = {
 
         /*
          * Clouds
-         * http://www.html5canvastutorials.com/tutorials/html5-canvas-custom-shapes/
          */
-        var x = 100
+        var cloudCanvasGradient = context.createLinearGradient(0, 75, 0, 100);
+        cloudCanvasGradient.addColorStop(0, 'white'); 
+        cloudCanvasGradient.addColorStop(1, '#f0f0f0'); // light gray
+        
         var cloud = new Kinetic.Shape({
             drawFunc: function(){
                 var context = this.getContext();
                 context.beginPath();
-                context.moveTo(200, 50);
-                context.bezierCurveTo(130, 100, 130, 150, 230, 150);
-                context.bezierCurveTo(250, 180, 320, 180, 340, 150);
-                context.bezierCurveTo(420, 150, 420, 120, 390, 100);
-                context.bezierCurveTo(430, 40, 370, 30, 340, 50);
-                context.bezierCurveTo(320, 5, 250, 20, 250, 50);
-                context.bezierCurveTo(200, 5, 150, 20, 170, 80);
+                context.moveTo(100, 100); 
+                context.lineTo(750, 100)
+                context.bezierCurveTo(750, 90, 480, 80, 275, 80); 
+                context.bezierCurveTo(510, 90, 500, 45, 375, 50); 
+                context.bezierCurveTo(500, 40, 150, 0, 208, 25); 
+                context.bezierCurveTo(125, 25, 65, 50, 130, 70); 
+                context.bezierCurveTo(65, 75, 65, 85, 170, 90); 
                 context.closePath(); // complete custom shape
                 this.fillStroke();  
             },
-            fill: 'white'
+            fill: cloudCanvasGradient
         });
         layer.add(cloud);
-        
+                
+        cloudCanvasGradient = context.createLinearGradient(375, 170, 375, 200);
+        cloudCanvasGradient.addColorStop(0, 'white'); 
+        cloudCanvasGradient.addColorStop(1, '#f0f0f0'); // light gray
         cloud = new Kinetic.Shape({
             drawFunc: function(){
                 var context = this.getContext();
                 context.beginPath();
-                context.moveTo(700, 90);
-                context.bezierCurveTo(630, 100, 630, 150, 730, 150);
-                context.bezierCurveTo(750, 180, 820, 180, 840, 150);
-                context.bezierCurveTo(820, 150, 820, 120, 890, 100);
-                context.bezierCurveTo(830, 40, 770, 30, 840, 50);
-                context.bezierCurveTo(720, 5, 750, 20, 750, 50);
-                context.bezierCurveTo(600, 5, 650, 20, 670, 80);
+                context.moveTo(375, 200); 
+                context.lineTo(950, 200) 
+                context.bezierCurveTo(1000, 170, 520, 160, 750, 170);
+                context.bezierCurveTo(670, 110, 500, 150, 570, 140); 
+                context.bezierCurveTo(490, 100, 400, 185, 500, 165); 
                 context.closePath(); // complete custom shape
                 this.fillStroke();  
             },
-            fill: 'white'
+            fill: cloudCanvasGradient
         });
         layer.add(cloud);
         
+        cloudCanvasGradient = context.createLinearGradient(0, 230, 0, 250);
+        cloudCanvasGradient.addColorStop(0, 'white'); 
+        cloudCanvasGradient.addColorStop(1, '#f0f0f0'); // light gray
+        cloud = new Kinetic.Shape({
+            drawFunc: function(){
+                var context = this.getContext();
+                context.beginPath();
+                context.moveTo(0, 250); 
+                context.lineTo(180, 250) 
+                context.bezierCurveTo(170, 240, 140, 210, 110, 230);
+                context.bezierCurveTo(120, 220, 100, 180, 20, 210); 
+                context.bezierCurveTo(75, 200, 20, 185, 0, 190); 
+                context.closePath(); // complete custom shape
+                this.fillStroke();  
+            },
+            fill: cloudCanvasGradient
+        });
+        layer.add(cloud);
         /*
          * grass with color gradient
          */
@@ -460,7 +481,7 @@ var SortOrderTrain = {
                 var context = this.getContext();
                 context.beginPath();
                 context.moveTo(0, 496);
-                context.quadraticCurveTo(200, 0, 388, 496);
+                context.quadraticCurveTo(200, 20, 410, 496);
                 context.closePath(); // complete custom shape
                 this.fillStroke();  
             },
@@ -743,7 +764,7 @@ var SortOrderTrain = {
         SortOrderTrain.level = lvl;
     },
 
-    animateTrain: function() {
+    animateTrain: function(/*Frame*/frame) {
         /*
          * Move the loco, outlines, and box cars.
          * It would be nice if they were all in a group
@@ -752,7 +773,13 @@ var SortOrderTrain = {
          * Moving each separately for now.
          */
         var dx = SortOrderTrain.track === 'track3' ? -1.5 : SortOrderTrain.track === 'track2' ? 1 : -0.5;
-        dx = dx * SortOrderTrain.level
+//        dx = dx * SortOrderTrain.level;
+        /*
+         * on the ipad the from frame.timeDiff is a little
+         * slower, so let's make the dx more if it is.
+         */
+        dx = frame.timeDiff > 20 ? frame.timeDiff > 30 ? frame.timeDiff > 40 ? dx * 4 : dx * 3 : dx * 2 : dx;
+        
         SortOrderTrain.moveTrain(dx);
     },
     
