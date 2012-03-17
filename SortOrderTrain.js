@@ -251,9 +251,9 @@ var SortOrderTrain = {
     bgLayer: null, 
     /* Kinetic.Layer for the box cars */
     boxLayer: null,
-    /* array of BoxCar objects */
+    /* array of BoxCar objects with random values */
     cars: [],
-    /* array of Kinetic.Shape objects for place holder outlines */
+    /* array of BoxCar objects where isOutline = true for place holder outlines */
     outlns: [],
     /* sorted array of answer values (either String or int) */
     answers: [],
@@ -263,6 +263,8 @@ var SortOrderTrain = {
     hill3: null,
     /* Kinetic.Shape of the hill by the middle track */
     hill2: null,
+    /* BoxCar outline to workaround http://www.kineticjs.com/forum/viewtopic.php?f=8&t=350 */
+    wkar: null,
     
     init: function() {
         SortOrderTrain.setMode();
@@ -309,7 +311,18 @@ var SortOrderTrain = {
         SortOrderTrain.setMode();
         SortOrderTrain.setLevel();
         
-        SortOrderTrain.createBoxCarOutlines(SortOrderTrain.boxLayer, LOCO_X + frontWidth + baseWidth + cabinWidth + HITCH_LENGTH, LOCO_Y + 40 /* same as base */);
+        var x = LOCO_X + frontWidth + baseWidth + cabinWidth + HITCH_LENGTH;
+        var y = LOCO_Y + 40; /* same as base */
+        /*
+         * This is a workaround for http://www.kineticjs.com/forum/viewtopic.php?f=8&t=350
+         * Create an 'invisible' group whose sole purpose is to prevent the first outline from disappearing
+         */
+        SortOrderTrain.wkar = new BoxCar(x, y, SortOrderTrain.boxLayer, '?', true);
+        
+        /*
+         * Create the outlines and cars
+         */
+        SortOrderTrain.createBoxCarOutlines(SortOrderTrain.boxLayer, x, y);
         SortOrderTrain.cars = SortOrderTrain.createBoxCars(SortOrderTrain.boxLayer);
     },
     
@@ -773,7 +786,7 @@ var SortOrderTrain = {
          * Moving each separately for now.
          */
         var dx = SortOrderTrain.track === 'track3' ? -1.5 : SortOrderTrain.track === 'track2' ? 1 : -0.5;
-//        dx = dx * SortOrderTrain.level;
+        dx = dx * SortOrderTrain.level;
         /*
          * on the ipad the from frame.timeDiff is a little
          * slower, so let's make the dx more if it is.
@@ -786,10 +799,11 @@ var SortOrderTrain = {
     moveTrain: function(/*int*/ dx) {
         var track = SortOrderTrain.track;
         SortOrderTrain.loco.x += dx;
+        SortOrderTrain.wkar.group.x += dx;
         
         for (var i = 0; i < SortOrderTrain.cars.length; i++) {
             SortOrderTrain.cars[i].group.x += dx;               
-            SortOrderTrain.outlns[i].group.x += dx; //move the outlines, too, for stop condition
+            SortOrderTrain.outlns[i].group.x += dx; //move the outlines, too, for stop condition, and they will be the ones that move on other tracks
         }
         SortOrderTrain.boxLayer.draw();
         
@@ -831,31 +845,41 @@ var SortOrderTrain = {
     changeTrack: function() {
         var scaleX = 1;
         var scaleY = 1;
+        var x = 0; //reduce the time off the screen by setting x
         if (SortOrderTrain.track === 'track2') {
             scaleY = 0.74;
             scaleX = -scaleY;
         } else if (SortOrderTrain.track === 'track1'){
             scaleY = 0.60;
             scaleX = scaleY;
+            x = 1000;
         } 
         
         /*
          * Scaling them puts them on the correct track.
          * Using a negative x scale will invert (flip horizontally)! -- thanks to the forum for that one
          */
+        SortOrderTrain.loco.x = x;
         SortOrderTrain.loco.scale.x = scaleX;
         SortOrderTrain.loco.scale.y = scaleY;
-
+        
+        SortOrderTrain.wkar.group.x = x;
+        SortOrderTrain.wkar.group.scale.x = scaleX;
+        SortOrderTrain.wkar.group.scale.y = scaleY;
+        
         for (var i = 0; i < SortOrderTrain.cars.length; i++) {
+            SortOrderTrain.outlns[i].group.x = x;
             SortOrderTrain.outlns[i].group.scale.x = scaleX;
             SortOrderTrain.outlns[i].group.scale.y = scaleY;
             
             SortOrderTrain.colorizeOutline(SortOrderTrain.outlns[i]);
+           
             if (scaleX < 0) {
                 /*
                  * Flip the text so it won't appear backward
                  */
                 SortOrderTrain.outlns[i].group.getChild('text').scale.x = -1;
+
             } else {
                 /*
                  * Set the text normally again
@@ -863,6 +887,8 @@ var SortOrderTrain = {
                 SortOrderTrain.outlns[i].group.getChild('text').scale.x = 1;
             }
             SortOrderTrain.cars[i].group.hide(); //we still need the colors, so just hide them for now
+            
+
         }
         
     },
@@ -877,6 +903,7 @@ var SortOrderTrain = {
               
               var color = boxcar.group.getChild('box').fill;
               outline.colorize(color, outline.value[0]);
+              
               return;
           }
       }
