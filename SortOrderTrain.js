@@ -263,8 +263,6 @@ var SortOrderTrain = {
     hill3: null,
     /* Kinetic.Shape of the hill by the middle track */
     hill2: null,
-    /* BoxCar outline to workaround http://www.kineticjs.com/forum/viewtopic.php?f=8&t=350 */
-    wkar: null,
     
     init: function() {
         SortOrderTrain.setMode();
@@ -313,11 +311,6 @@ var SortOrderTrain = {
         
         var x = LOCO_X + frontWidth + baseWidth + cabinWidth + HITCH_LENGTH;
         var y = LOCO_Y + 40; /* same as base */
-        /*
-         * This is a workaround for http://www.kineticjs.com/forum/viewtopic.php?f=8&t=350
-         * Create an 'invisible' group whose sole purpose is to prevent the first outline from disappearing
-         */
-        SortOrderTrain.wkar = new BoxCar(x, y, SortOrderTrain.boxLayer, '?', true);
         
         /*
          * Create the outlines and cars
@@ -799,7 +792,6 @@ var SortOrderTrain = {
     moveTrain: function(/*int*/ dx) {
         var track = SortOrderTrain.track;
         SortOrderTrain.loco.x += dx;
-        SortOrderTrain.wkar.group.x += dx;
         
         for (var i = 0; i < SortOrderTrain.cars.length; i++) {
             SortOrderTrain.cars[i].group.x += dx;               
@@ -863,9 +855,6 @@ var SortOrderTrain = {
         SortOrderTrain.loco.scale.x = scaleX;
         SortOrderTrain.loco.scale.y = scaleY;
         
-        SortOrderTrain.wkar.group.x = x;
-        SortOrderTrain.wkar.group.scale.x = scaleX;
-        SortOrderTrain.wkar.group.scale.y = scaleY;
         
         for (var i = 0; i < SortOrderTrain.cars.length; i++) {
             SortOrderTrain.outlns[i].group.x = x;
@@ -917,15 +906,7 @@ var SortOrderTrain = {
          */
         SortOrderTrain.stage.stop();
         SortOrderTrain.boxLayer.listen(true);
-        
-        /*
-         * clear the box layer and remove all place holder outlines and box cars
-         */
-        SortOrderTrain.boxLayer.clear();
-        SortOrderTrain.boxLayer.removeChildren();
-        SortOrderTrain.initBoxLayer();
-        SortOrderTrain.boxLayer.draw();
-        
+                
         /*
          * put the hills back and
          * put the loco back to original size, at original position
@@ -939,6 +920,14 @@ var SortOrderTrain = {
         SortOrderTrain.loco.moveTo(SortOrderTrain.bgLayer);
         SortOrderTrain.loco.setPosition(0, 0);
         SortOrderTrain.bgLayer.draw();
+
+        /*
+         * clear the box layer and remove all place holder outlines and box cars
+         */
+        SortOrderTrain.boxLayer.clear();
+        SortOrderTrain.boxLayer.removeChildren();
+        SortOrderTrain.initBoxLayer();
+        SortOrderTrain.boxLayer.draw();
     },
     
     about: function(show) {
