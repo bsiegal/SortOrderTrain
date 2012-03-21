@@ -17,7 +17,7 @@
  ******************************************************************************/
 
 var COLORS = ['red', 'orange', 'yellow', 'purple', 'goldenrod', 'pink', 'coral', 'gold', 'chocolate',
-              'khaki', 'lavender', 'lavenderblush', 'salmon', 'linen', 'darkred', 'crimson', 'magenta'];
+              'khaki', 'lavender', 'lavenderblush', 'salmon', 'darkred', 'crimson', 'magenta'];
 var ALPHABET = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
 var NUMBERS = []; //initialized on ready
 var BOX_START = 150;
@@ -29,16 +29,9 @@ var WHEEL_PADDING = 5;
 var HITCH_LENGTH = 15;
 var LOCO_X = 20;
 var LOCO_Y = 388; //reference point for where the loco "top" is drawn
-var frontWidth = 10;
-var frontHeight = 55;
-var baseWidth = 60;
-var baseHeight = 50;
-var cabinWidth = 60;
-var cabinHeight = 80;
-var windowWidth = cabinWidth - 30;
-var windowHeight = cabinHeight - 50;
-var topWidth = cabinWidth + 10;
-var topHeight = 10;
+var FRONT_WIDTH = 10;
+var BASE_WIDTH = 60;
+var CABIN_WIDTH = 60;
 
 function BoxCar(/*int*/ x, /*int*/ y, /*Kinetic.Layer*/ layer, /*Number or Alphabetic character */value, /*boolean*/ isOutline) {
     this.layer = layer;
@@ -276,7 +269,7 @@ var SortOrderTrain = {
          * will be here, too until it's time to move.
          */
         SortOrderTrain.bgLayer = new Kinetic.Layer();
-        SortOrderTrain.loco = SortOrderTrain.createBackground(SortOrderTrain.bgLayer);
+        SortOrderTrain.createBackground(SortOrderTrain.bgLayer);
         stage.add(SortOrderTrain.bgLayer);
 
         /*
@@ -309,14 +302,14 @@ var SortOrderTrain = {
         SortOrderTrain.setMode();
         SortOrderTrain.setLevel();
         
-        var x = LOCO_X + frontWidth + baseWidth + cabinWidth + HITCH_LENGTH;
+        var x = LOCO_X + FRONT_WIDTH + BASE_WIDTH + CABIN_WIDTH + HITCH_LENGTH;
         var y = LOCO_Y + 40; /* same as base */
         
         /*
          * Create the outlines and cars
          */
         SortOrderTrain.createBoxCarOutlines(SortOrderTrain.boxLayer, x, y);
-        SortOrderTrain.cars = SortOrderTrain.createBoxCars(SortOrderTrain.boxLayer);
+        SortOrderTrain.createBoxCars(SortOrderTrain.boxLayer);
     },
     
     createBackground: function(/*Kinetic.Layer*/ layer) {
@@ -523,17 +516,18 @@ var SortOrderTrain = {
         imageObj.src = "320px-Gravel_small_stones.jpg";
         
 
-        return SortOrderTrain.createLoco(layer);
+        SortOrderTrain.createLoco(layer);
     },
     
     
     createLoco: function(/*Kinetic.Layer*/ layer) {
         var loco = new Kinetic.Group();
         
+        var frontHeight = 55;
         var front = new Kinetic.Rect({
             x: LOCO_X,
             y: LOCO_Y + 35,
-            width: frontWidth,
+            width: FRONT_WIDTH,
             height: frontHeight,
             stroke: 'black',
             strokeWidth: 4,
@@ -541,10 +535,11 @@ var SortOrderTrain = {
         });
         loco.add(front);
         
+        var baseHeight = 50;
         var base  = new Kinetic.Rect({
-            x: LOCO_X + frontWidth,
+            x: LOCO_X + FRONT_WIDTH,
             y: LOCO_Y + 40,
-            width: baseWidth,
+            width: BASE_WIDTH,
             height: baseHeight,
             stroke: 'black',
             strokeWidth: 4,
@@ -552,10 +547,11 @@ var SortOrderTrain = {
         });
         loco.add(base);
         
+        var cabinHeight = 80;
         var cabin = new Kinetic.Rect({
-            x: LOCO_X + frontWidth + baseWidth,
+            x: LOCO_X + FRONT_WIDTH + BASE_WIDTH,
             y: LOCO_Y + 10,
-            width: cabinWidth,
+            width: CABIN_WIDTH,
             height: cabinHeight,
             stroke: 'black',
             strokeWidth: 4,
@@ -563,8 +559,10 @@ var SortOrderTrain = {
         });
         loco.add(cabin);
 
+        var windowWidth = CABIN_WIDTH - 30;
+        var windowHeight = cabinHeight - 50;
         var window = new Kinetic.Rect({
-            x: LOCO_X + frontWidth + baseWidth + 15,
+            x: LOCO_X + FRONT_WIDTH + BASE_WIDTH + 15,
             y: LOCO_Y + 25,
             width: windowWidth,
             height: windowHeight,
@@ -574,8 +572,10 @@ var SortOrderTrain = {
         });
         loco.add(window);
         
+        var topWidth = CABIN_WIDTH + 10;
+        var topHeight = 10;
         var top =  new Kinetic.Rect({
-            x: LOCO_X + frontWidth + baseWidth - 5,
+            x: LOCO_X + FRONT_WIDTH + BASE_WIDTH - 5,
             y: LOCO_Y,
             width: topWidth,
             height: topHeight,
@@ -588,7 +588,7 @@ var SortOrderTrain = {
         var stackWidth = 20;
         var stackHeight = 30;
         var stack =  new Kinetic.Rect({
-            x: LOCO_X + frontWidth + stackWidth / 2,
+            x: LOCO_X + FRONT_WIDTH + stackWidth / 2,
             y: LOCO_Y + 10,
             width: stackWidth,
             height: stackHeight,
@@ -601,7 +601,7 @@ var SortOrderTrain = {
         var stackTopWidth = stackWidth + 10;
         var stackTopHeight = 15;
         var stackTop = new Kinetic.Rect({
-            x: LOCO_X + frontWidth + stackWidth / 2 - 5,
+            x: LOCO_X + FRONT_WIDTH + stackWidth / 2 - 5,
             y: LOCO_Y - 5,
             width: stackTopWidth,
             height: stackTopHeight,
@@ -617,8 +617,8 @@ var SortOrderTrain = {
                 context.beginPath();
                 context.moveTo(LOCO_X + 0, LOCO_Y + cabinHeight + topHeight);
                 context.lineTo(LOCO_X - 10, LOCO_Y + cabinHeight + 2 * WHEEL_RADIUS);
-                context.lineTo(LOCO_X + frontWidth, LOCO_Y + cabinHeight + 2 * WHEEL_RADIUS);
-                context.lineTo(LOCO_X + frontWidth, LOCO_Y + cabinHeight + topHeight);
+                context.lineTo(LOCO_X + FRONT_WIDTH, LOCO_Y + cabinHeight + 2 * WHEEL_RADIUS);
+                context.lineTo(LOCO_X + FRONT_WIDTH, LOCO_Y + cabinHeight + topHeight);
                 context.closePath();
                 this.fillStroke();
                 
@@ -634,7 +634,7 @@ var SortOrderTrain = {
          * Add 1st wheel
          */
         var wheel1 = new Kinetic.Circle({
-            x: LOCO_X + frontWidth + WHEEL_RADIUS + WHEEL_PADDING,
+            x: LOCO_X + FRONT_WIDTH + WHEEL_RADIUS + WHEEL_PADDING,
             y: LOCO_Y + cabinHeight + topHeight + WHEEL_PADDING,
             radius: WHEEL_RADIUS,
             fill: 'black',
@@ -646,7 +646,7 @@ var SortOrderTrain = {
          * Add 2nd wheel
          */
         var wheel2 = new Kinetic.Circle({
-            x: LOCO_X + frontWidth + baseWidth + 30,
+            x: LOCO_X + FRONT_WIDTH + BASE_WIDTH + 30,
             y: LOCO_Y + cabinHeight + topHeight + WHEEL_PADDING,
             radius: WHEEL_RADIUS,
             fill: 'black',
@@ -656,7 +656,7 @@ var SortOrderTrain = {
         
         layer.add(loco);
 
-        return loco;
+        SortOrderTrain.loco = loco;
     },
         
     createBoxCarOutlines: function(/*Kinetic.Layer*/ layer, /*int*/ startX, /*int*/ y) {
@@ -714,7 +714,7 @@ var SortOrderTrain = {
             SortOrderTrain.answers.sort();            
         }
         
-        return cars;
+        SortOrderTrain.cars = cars;
     },
     
     checkOutline: function(/* BoxCar */ boxcar){
@@ -860,10 +860,9 @@ var SortOrderTrain = {
             SortOrderTrain.outlns[i].group.x = x;
             SortOrderTrain.outlns[i].group.scale.x = scaleX;
             SortOrderTrain.outlns[i].group.scale.y = scaleY;
-            
-            SortOrderTrain.colorizeOutline(SortOrderTrain.outlns[i]);
-           
+                       
             if (scaleX < 0) {
+                SortOrderTrain.colorizeOutline(SortOrderTrain.outlns[i]);
                 /*
                  * Flip the text so it won't appear backward
                  */
