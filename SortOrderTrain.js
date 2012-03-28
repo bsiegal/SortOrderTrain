@@ -32,6 +32,7 @@ var LOCO_Y = 388; //reference point for where the loco "top" is drawn
 var FRONT_WIDTH = 10;
 var BASE_WIDTH = 60;
 var CABIN_WIDTH = 60;
+var STACK_WIDTH = 20;
 
 function BoxCar(/*int*/ x, /*int*/ y, /*Kinetic.Layer*/ layer, /*Number or Alphabetic character */value, /*boolean*/ isOutline) {
     this.layer = layer;
@@ -178,7 +179,7 @@ function BoxCar(/*int*/ x, /*int*/ y, /*Kinetic.Layer*/ layer, /*Number or Alpha
                  */
                 var vector = SortOrderTrain.checkOutline(thiz);
                 if (vector) {
-                    if (console && console.log) console.log("nudged by =" + vector.x + ", " + vector.y);
+                    SortOrderTrain.consoleLog("nudged by =" + vector.x + ", " + vector.y);
 
                     group.x += vector.x;
                     group.y += vector.y;
@@ -196,8 +197,8 @@ function BoxCar(/*int*/ x, /*int*/ y, /*Kinetic.Layer*/ layer, /*Number or Alpha
                 var allGood = true;
                 for (var i = 0; i < SortOrderTrain.outlns.length; i++) {
                     if (SortOrderTrain.outlns[i].value.length !== 1 || SortOrderTrain.outlns[i].value[0] !== SortOrderTrain.answers[i]) {
-                        if (console && console.log) console.log('not equal! for i = ' + i + ' -- SortOrderTrain.outlns[i].value  =  ' + SortOrderTrain.outlns[i].value[0]);
-                        if (console && console.log) console.log('SortOrderTrain.answers[i] = ' + SortOrderTrain.answers[i]);
+                        SortOrderTrain.consoleLog('not equal! for i = ' + i + ' -- SortOrderTrain.outlns[i].value  =  ' + SortOrderTrain.outlns[i].value[0]);
+                        SortOrderTrain.consoleLog('SortOrderTrain.answers[i] = ' + SortOrderTrain.answers[i]);
                         allGood = false;
                         break;
                     }
@@ -205,10 +206,24 @@ function BoxCar(/*int*/ x, /*int*/ y, /*Kinetic.Layer*/ layer, /*Number or Alpha
                 if (allGood) {
                     SortOrderTrain.loco.moveTo(SortOrderTrain.boxLayer);
                     SortOrderTrain.bgLayer.draw();
+                    SortOrderTrain.boxLayer.draw();
                     
+                    for (var i = 0; i < SortOrderTrain.puffs.length; i++) {
+                        var puff = SortOrderTrain.puffs[i];
+                        puff.reset();
+                        puff.transition(i * 250);
+                    }
+
                     thiz.layer.listen(false);
                     SortOrderTrain.track = 'track3';
-                    SortOrderTrain.stage.start();                                    
+                    /*
+                     * Wait until the smoke puffs are done, then start the train moving
+                     */
+                    setTimeout(function() {
+                        SortOrderTrain.loco.moveTo(SortOrderTrain.boxLayer);
+                        SortOrderTrain.bgLayer.draw();
+                        SortOrderTrain.stage.start();                                                            
+                    }, SortOrderTrain.puffs.length * 250);
                 }
                 
             });      
@@ -233,11 +248,67 @@ function BoxCar(/*int*/ x, /*int*/ y, /*Kinetic.Layer*/ layer, /*Number or Alpha
 
 }
 
+function Puff (/*Kinetic.Layer*/ layer, /*int*/ x, /*int*/ y) {
+    this.layer = layer;
+    this.x = x;
+    this.y = y;
+    this.init = function() {        
+        var puff = new Kinetic.Shape({
+            drawFunc: function(){
+                var context = this.getContext();
+                context.beginPath();
+                context.moveTo(x + 5, y -15);
+                context.bezierCurveTo(x - 3, y - 17, x + 3, y - 33, x + 17, y - 28);
+                context.bezierCurveTo(x + 15, y - 32, x + 23, y - 25, x + 18, y - 23);
+                context.bezierCurveTo(x + 35, y - 18, x + 28, y - 4, x + 16, y - 7);
+                context.bezierCurveTo(x + 18, y + 5, x - 5, y - 5, x + 5, y - 15);
+                context.closePath(); // complete custom shape
+                this.fillStroke();
+            },
+            fill: 'white',
+            alpha: 0
+        });
+
+        layer.add(puff);  
+        
+        this.puff = puff;
+        
+    };
+
+    this.reset = function() {
+        this.puff.x = 0;
+        this.puff.y = 0;
+        this.puff.scale.x = 1;
+        this.puff.scale.y = 1;
+        this.puff.alpha = 1;
+        this.puff.moveToTop();
+    };
+    
+    this.transition = function(/*int*/ ms) {
+        var thiz = this;
+        setTimeout(function() {
+            thiz.puff.transitionTo({
+                y: -400,
+                x: -20,
+                alpha: 0,
+                scale: {
+                    x: 1.7,
+                    y: 1.7
+                },
+                duration: 1
+            });                
+        }, ms);
+    };
+    
+    this.init();
+}
+
 var SortOrderTrain = {
+    debug: false,
     /* Kinetic.Stage - the stage */
     stage: null,
     /* int level (default to lowest) */
-    level: 5, 
+    level: 2, 
     /* the Kinetic.Layer to move things around on */
     topLayer: null,
     /* Kinetic.Layer to be the background */
@@ -256,12 +327,14 @@ var SortOrderTrain = {
     hill3: null,
     /* Kinetic.Shape of the hill by the middle track */
     hill2: null,
+    /* array of Puff objects */
+    puffs: [],
     
     init: function() {
         SortOrderTrain.setMode();
         SortOrderTrain.setLevel();
         
-        var stage = new Kinetic.Stage('game', 1000, 600);
+        var stage = new Kinetic.Stage({container: 'game', width: 1000, height: 600});
         SortOrderTrain.stage = stage;
         /*
          * Create the background layer and sky, clouds,
@@ -516,6 +589,8 @@ var SortOrderTrain = {
         imageObj.src = "320px-Gravel_small_stones.jpg";
         
 
+        
+        SortOrderTrain.createSmokePuffs(layer, LOCO_X + FRONT_WIDTH + STACK_WIDTH / 4, LOCO_Y + 10);
         SortOrderTrain.createLoco(layer);
     },
     
@@ -585,12 +660,11 @@ var SortOrderTrain = {
         });
         loco.add(top);
 
-        var stackWidth = 20;
         var stackHeight = 30;
         var stack =  new Kinetic.Rect({
-            x: LOCO_X + FRONT_WIDTH + stackWidth / 2,
+            x: LOCO_X + FRONT_WIDTH + STACK_WIDTH / 2,
             y: LOCO_Y + 10,
-            width: stackWidth,
+            width: STACK_WIDTH,
             height: stackHeight,
             stroke: 'black',
             strokeWidth: 4,
@@ -598,10 +672,10 @@ var SortOrderTrain = {
         });
         loco.add(stack);
 
-        var stackTopWidth = stackWidth + 10;
+        var stackTopWidth = STACK_WIDTH + 10;
         var stackTopHeight = 15;
         var stackTop = new Kinetic.Rect({
-            x: LOCO_X + FRONT_WIDTH + stackWidth / 2 - 5,
+            x: LOCO_X + FRONT_WIDTH + STACK_WIDTH / 2 - 5,
             y: LOCO_Y - 5,
             width: stackTopWidth,
             height: stackTopHeight,
@@ -658,6 +732,12 @@ var SortOrderTrain = {
 
         SortOrderTrain.loco = loco;
     },
+    
+    createSmokePuffs: function(/*Kinetic.Layer*/ layer, /*int*/ x, /*int*/ y) {
+        for (var i = 0; i < 5; i++) {
+            SortOrderTrain.puffs.push(new Puff(layer, x, y));            
+        }
+    },
         
     createBoxCarOutlines: function(/*Kinetic.Layer*/ layer, /*int*/ startX, /*int*/ y) {
         var outlns = [];
@@ -689,7 +769,7 @@ var SortOrderTrain = {
          */
         var values = SortOrderTrain.mode === 'num' ? NUMBERS.slice() : ALPHABET.slice();
         
-        
+        SortOrderTrain.consoleLog('createBoxCars: level = ' + SortOrderTrain.level + '; BOX_START = ' + BOX_START + ', BOX_MARGIN = ' + BOX_MARGIN);
         for (var i = 0; i < SortOrderTrain.level; i++) {
             /*
              * randomly pick a value from the array, then remove it from the array so it cannot be picked again
@@ -729,9 +809,9 @@ var SortOrderTrain = {
         var a = boxcar.group.getChild('box').getAbsolutePosition();
 
         for (var i = 0; i < SortOrderTrain.outlns.length; i++) {
-            if (console && console.log) console.log('a.x = ' + a.x + ', a.y = ' + a.y);
+            SortOrderTrain.consoleLog('a.x = ' + a.x + ', a.y = ' + a.y);
             var o = SortOrderTrain.outlns[i];
-            if (console && console.log) console.log('i = ' + i + ': o.x = ' + o.x + ', o.y = ' + o.y);
+            SortOrderTrain.consoleLog('i = ' + i + ': o.x = ' + o.x + ', o.y = ' + o.y);
             if (a.x > o.x - 20 && a.x < o.x + 20 && a.y > o.y - 20 && a.y < o.y + 20) {
                 /*
                  * Create vector with the difference in locations
@@ -743,7 +823,7 @@ var SortOrderTrain = {
                  * set the value of the outline to this box car's value
                  */
                 o.value.push(boxcar.value[0]);
-                if (console && console.log) console.log('outline[' + i + '].value pushed ' + boxcar.value[0]);
+                SortOrderTrain.consoleLog('outline[' + i + '].value pushed ' + boxcar.value[0]);
                 return vector;
             }
         }
@@ -765,8 +845,11 @@ var SortOrderTrain = {
             BOX_START = 0;
             if (lvl > 6) {
                 BOX_MARGIN = 25;
+            } else {
+                BOX_MARGIN = 50;
             }
         }
+        SortOrderTrain.consoleLog('setLevel: level = ' + lvl + '; BOX_START = ' + BOX_START + ', BOX_MARGIN = ' + BOX_MARGIN);
         SortOrderTrain.level = lvl;
     },
 
@@ -800,7 +883,7 @@ var SortOrderTrain = {
         SortOrderTrain.boxLayer.draw();
         
         if (track === 'track3' && SortOrderTrain.outlns[SortOrderTrain.outlns.length - 1].group.getChild('box').getAbsolutePosition().x + BOX_WIDTH < 0) {  
-            if (console && console.log) console.log('stop condition for track3 met');
+            SortOrderTrain.consoleLog('stop condition for track3 met');
             /*
              * it has finished track 3, move to track2
              */
@@ -813,7 +896,7 @@ var SortOrderTrain = {
             SortOrderTrain.changeTrack();
             SortOrderTrain.stage.start();
         } else if (track === 'track2'  && SortOrderTrain.loco.getAbsolutePosition().x  - SortOrderTrain.outlns.length * (BOX_WIDTH + HITCH_LENGTH) > 1000) {
-            if (console && console.log) console.log('stop condition for track2 met');
+            SortOrderTrain.consoleLog('stop condition for track2 met');
             /*
              * it has finished track 2, move to track1
              */
@@ -826,7 +909,7 @@ var SortOrderTrain = {
             SortOrderTrain.changeTrack();
             SortOrderTrain.stage.start();
         } else if (track === 'track1' && SortOrderTrain.outlns[SortOrderTrain.outlns.length - 1].group.getChild('box').getAbsolutePosition().x + BOX_WIDTH < 0) {
-            if (console && console.log) console.log('stop condition for track1 met');
+            SortOrderTrain.consoleLog('stop condition for track1 met');
             SortOrderTrain.stage.stop();
             
             SortOrderTrain.reInit();
@@ -874,11 +957,9 @@ var SortOrderTrain = {
                  */
                 SortOrderTrain.outlns[i].group.getChild('text').scale.x = 1;
             }
-            SortOrderTrain.cars[i].group.hide(); //we still need the colors, so just hide them for now
-            
+            SortOrderTrain.cars[i].group.hide(); //we still need the colors, so just hide them for now            
 
-        }
-        
+        }                
     },
         
     colorizeOutline: function(/*BoxCar*/ outline) {
@@ -943,7 +1024,14 @@ var SortOrderTrain = {
         } else {
             SortOrderTrain.about(true);
         }
+    },
+    
+    consoleLog: function(msg) {
+        if (SortOrderTrain.debug && console && console.log) {
+            console.log(msg);
+        }
     }
+
 };
 
 $(function() {
