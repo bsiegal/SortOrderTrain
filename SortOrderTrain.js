@@ -210,7 +210,6 @@ function BoxCar(/*int*/ x, /*int*/ y, /*Kinetic.Layer*/ layer, /*Number or Alpha
                     
                     for (var i = 0; i < SortOrderTrain.puffs.length; i++) {
                         var puff = SortOrderTrain.puffs[i];
-                        puff.reset();
                         puff.transition(i * 250);
                     }
 
@@ -287,6 +286,7 @@ function Puff (/*Kinetic.Layer*/ layer, /*int*/ x, /*int*/ y) {
     this.transition = function(/*int*/ ms) {
         var thiz = this;
         setTimeout(function() {
+            thiz.reset();
             thiz.puff.transitionTo({
                 y: -400,
                 x: -20,
