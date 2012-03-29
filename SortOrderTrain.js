@@ -734,7 +734,7 @@ var SortOrderTrain = {
     },
     
     createSmokePuffs: function(/*Kinetic.Layer*/ layer, /*int*/ x, /*int*/ y) {
-        for (var i = 0; i < 5; i++) {
+        for (var i = 0; i < 3; i++) {
             SortOrderTrain.puffs.push(new Puff(layer, x, y));            
         }
     },
