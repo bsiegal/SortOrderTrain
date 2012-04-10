@@ -38,7 +38,7 @@ function BoxCar(/*int*/ x, /*int*/ y, /*Kinetic.Layer*/ layer, /*Number or Alpha
     this.layer = layer;
     this.x = x;
     this.y = y;
-    this.value = value === '?' ? [] : [value]; //array because outlines might have more than 1 value if 1+ boxcars are on it
+    this.value = value;
     
     this.init = function() {
         var group = new Kinetic.Group();
@@ -147,12 +147,10 @@ function BoxCar(/*int*/ x, /*int*/ y, /*Kinetic.Layer*/ layer, /*Number or Alpha
                 /*
                  * First clear this value from all outlines that might have it
                  */
-                var value = thiz.value[0];
+                var value = thiz.value;
                 for (var i = 0; i < SortOrderTrain.outlns.length; i++) {
-                    for (var j = 0; j < SortOrderTrain.outlns[i].value.length; j++) {
-                        if (SortOrderTrain.outlns[i].value[j] === value) {
-                            SortOrderTrain.outlns[i].value.splice(j, 1);
-                        }
+                    if (SortOrderTrain.outlns[i].value === value) {
+                        SortOrderTrain.outlns[i].value = '?';
                     }
                 }
                 
@@ -165,7 +163,7 @@ function BoxCar(/*int*/ x, /*int*/ y, /*Kinetic.Layer*/ layer, /*Number or Alpha
             });
 
             /*
-             * when the drag operation is completed, remove the gropu
+             * when the drag operation is completed, remove the group
              * from the topLayer and add it back to the boxLayer.
              * Turn event listening back on for the boxLayer
              */
@@ -181,8 +179,8 @@ function BoxCar(/*int*/ x, /*int*/ y, /*Kinetic.Layer*/ layer, /*Number or Alpha
                 if (vector) {
                     SortOrderTrain.consoleLog("nudged by =" + vector.x + ", " + vector.y);
 
-                    group.x += vector.x;
-                    group.y += vector.y;
+                    group.attrs.x += vector.x;
+                    group.attrs.y += vector.y;
                     
                 }
                 thiz.layer.draw();
@@ -196,8 +194,8 @@ function BoxCar(/*int*/ x, /*int*/ y, /*Kinetic.Layer*/ layer, /*Number or Alpha
                  */
                 var allGood = true;
                 for (var i = 0; i < SortOrderTrain.outlns.length; i++) {
-                    if (SortOrderTrain.outlns[i].value.length !== 1 || SortOrderTrain.outlns[i].value[0] !== SortOrderTrain.answers[i]) {
-                        SortOrderTrain.consoleLog('not equal! for i = ' + i + ' -- SortOrderTrain.outlns[i].value  =  ' + SortOrderTrain.outlns[i].value[0]);
+                    if (SortOrderTrain.outlns[i].value === '?' || SortOrderTrain.outlns[i].value !== SortOrderTrain.answers[i]) {
+                        SortOrderTrain.consoleLog('not equal! for i = ' + i + ' -- SortOrderTrain.outlns[i].value  =  ' + SortOrderTrain.outlns[i].value);
                         SortOrderTrain.consoleLog('SortOrderTrain.answers[i] = ' + SortOrderTrain.answers[i]);
                         allGood = false;
                         break;
@@ -231,15 +229,16 @@ function BoxCar(/*int*/ x, /*int*/ y, /*Kinetic.Layer*/ layer, /*Number or Alpha
     };    
     
     this.colorize = function(/*String*/color, /*String or number*/ text) {
-        this.group.getChild('box').fill = color;
-        this.group.getChild('box').stroke = 'black';
-        this.group.getChild('wheel1').stroke = 'black';
-        this.group.getChild('wheel1').fill = 'black';
-        this.group.getChild('wheel2').stroke = 'black';
-        this.group.getChild('wheel2').fill = 'black';
-        this.group.getChild('hitch').stroke = 'black';
-        this.group.getChild('hitch').fill = 'black';
-        this.group.getChild('text').text = text;
+        SortOrderTrain.consoleLog('colorize: color = ' + color);
+        this.group.get('.box')[0].attrs.fill = color;
+        this.group.get('.box')[0].attrs.stroke = 'black';
+        this.group.get('.wheel1')[0].attrs.stroke = 'black';
+        this.group.get('.wheel1')[0].attrs.fill = 'black';
+        this.group.get('.wheel2')[0].attrs.stroke = 'black';
+        this.group.get('.wheel2')[0].attrs.fill = 'black';
+        this.group.get('.hitch')[0].attrs.stroke = 'black';
+        this.group.get('.hitch')[0].attrs.fill = 'black';
+        this.group.get('.text')[0].attrs.text = text;
         this.layer.draw();
     };
     
@@ -275,11 +274,11 @@ function Puff (/*Kinetic.Layer*/ layer, /*int*/ x, /*int*/ y) {
     };
 
     this.reset = function() {
-        this.puff.x = 0;
-        this.puff.y = 0;
-        this.puff.scale.x = 1;
-        this.puff.scale.y = 1;
-        this.puff.alpha = 1;
+        this.puff.attrs.x = 0;
+        this.puff.attrs.y = 0;
+        this.puff.attrs.scale.x = 1;
+        this.puff.attrs.scale.y = 1;
+        this.puff.attrs.alpha = 1;
         this.puff.moveToTop();
     };
     
@@ -304,7 +303,7 @@ function Puff (/*Kinetic.Layer*/ layer, /*int*/ x, /*int*/ y) {
 }
 
 var SortOrderTrain = {
-    debug: false,
+    debug: true,
     /* Kinetic.Stage - the stage */
     stage: null,
     /* int level (default to lowest) */
@@ -806,7 +805,7 @@ var SortOrderTrain = {
          * of the box car, b/c absolute position of the group
          * doesn'tt seem to work and instead return relative to original position.
          */
-        var a = boxcar.group.getChild('box').getAbsolutePosition();
+        var a = boxcar.group.get('.box')[0].getAbsolutePosition();
 
         for (var i = 0; i < SortOrderTrain.outlns.length; i++) {
             SortOrderTrain.consoleLog('a.x = ' + a.x + ', a.y = ' + a.y);
@@ -820,10 +819,26 @@ var SortOrderTrain = {
                 var vector = {x: o.x - a.x, y: o.y - a.y};
                 
                 /*
-                 * set the value of the outline to this box car's value
+                 * If there was already a box car on this outline,
+                 * transition it back to it's 0,0 position.
                  */
-                o.value.push(boxcar.value[0]);
-                SortOrderTrain.consoleLog('outline[' + i + '].value pushed ' + boxcar.value[0]);
+                if (o.value !== '?') {
+                    for (var j = 0; j < SortOrderTrain.cars.length; j++) {
+                        if (SortOrderTrain.cars[j].value === o.value) {
+                            SortOrderTrain.cars[j].group.transitionTo({
+                                y: 0,
+                                x: 0,
+                                duration: 0.3
+                            });
+                            break;
+                        }
+                    }
+                }
+                /*
+                 * Then set the value of the outline to this box car's value
+                 */
+                o.value = boxcar.value;
+                SortOrderTrain.consoleLog('outline[' + i + '].value = ' + boxcar.value);
                 return vector;
             }
         }
@@ -874,15 +889,15 @@ var SortOrderTrain = {
     
     moveTrain: function(/*int*/ dx) {
         var track = SortOrderTrain.track;
-        SortOrderTrain.loco.x += dx;
+        SortOrderTrain.loco.attrs.x += dx;
         
         for (var i = 0; i < SortOrderTrain.cars.length; i++) {
-            SortOrderTrain.cars[i].group.x += dx;               
-            SortOrderTrain.outlns[i].group.x += dx; //move the outlines, too, for stop condition, and they will be the ones that move on other tracks
+            SortOrderTrain.cars[i].group.attrs.x += dx;               
+            SortOrderTrain.outlns[i].group.attrs.x += dx; //move the outlines, too, for stop condition, and they will be the ones that move on other tracks
         }
         SortOrderTrain.boxLayer.draw();
         
-        if (track === 'track3' && SortOrderTrain.outlns[SortOrderTrain.outlns.length - 1].group.getChild('box').getAbsolutePosition().x + BOX_WIDTH < 0) {  
+        if (track === 'track3' && SortOrderTrain.outlns[SortOrderTrain.outlns.length - 1].group.get('.box')[0].getAbsolutePosition().x + BOX_WIDTH < 0) {  
             SortOrderTrain.consoleLog('stop condition for track3 met');
             /*
              * it has finished track 3, move to track2
@@ -908,7 +923,7 @@ var SortOrderTrain = {
             SortOrderTrain.track = 'track1';           
             SortOrderTrain.changeTrack();
             SortOrderTrain.stage.start();
-        } else if (track === 'track1' && SortOrderTrain.outlns[SortOrderTrain.outlns.length - 1].group.getChild('box').getAbsolutePosition().x + BOX_WIDTH < 0) {
+        } else if (track === 'track1' && SortOrderTrain.outlns[SortOrderTrain.outlns.length - 1].group.get('.box')[0].getAbsolutePosition().x + BOX_WIDTH < 0) {
             SortOrderTrain.consoleLog('stop condition for track1 met');
             SortOrderTrain.stage.stop();
             
@@ -934,28 +949,28 @@ var SortOrderTrain = {
          * Scaling them puts them on the correct track.
          * Using a negative x scale will invert (flip horizontally)! -- thanks to the forum for that one
          */
-        SortOrderTrain.loco.x = x;
-        SortOrderTrain.loco.scale.x = scaleX;
-        SortOrderTrain.loco.scale.y = scaleY;
+        SortOrderTrain.loco.attrs.x = x;
+        SortOrderTrain.loco.attrs.scale.x = scaleX;
+        SortOrderTrain.loco.attrs.scale.y = scaleY;
         
         
         for (var i = 0; i < SortOrderTrain.cars.length; i++) {
-            SortOrderTrain.outlns[i].group.x = x;
-            SortOrderTrain.outlns[i].group.scale.x = scaleX;
-            SortOrderTrain.outlns[i].group.scale.y = scaleY;
+            SortOrderTrain.outlns[i].group.attrs.x = x;
+            SortOrderTrain.outlns[i].group.attrs.scale.x = scaleX;
+            SortOrderTrain.outlns[i].group.attrs.scale.y = scaleY;
                        
             if (scaleX < 0) {
                 SortOrderTrain.colorizeOutline(SortOrderTrain.outlns[i]);
                 /*
                  * Flip the text so it won't appear backward
                  */
-                SortOrderTrain.outlns[i].group.getChild('text').scale.x = -1;
+                SortOrderTrain.outlns[i].group.get('.text')[0].attrs.scale.x = -1;
 
             } else {
                 /*
                  * Set the text normally again
                  */
-                SortOrderTrain.outlns[i].group.getChild('text').scale.x = 1;
+                SortOrderTrain.outlns[i].group.get('.text')[0].attrs.scale.x = 1;
             }
             SortOrderTrain.cars[i].group.hide(); //we still need the colors, so just hide them for now            
 
@@ -968,10 +983,10 @@ var SortOrderTrain = {
          */
       for (var i = 0; i < SortOrderTrain.cars.length; i++) {
           var boxcar = SortOrderTrain.cars[i];
-          if (boxcar.value[0] === outline.value[0]) {
+          if (boxcar.value === outline.value) {
               
-              var color = boxcar.group.getChild('box').fill;
-              outline.colorize(color, outline.value[0]);
+              var color = boxcar.group.get('.box')[0].attrs.fill;
+              outline.colorize(color, outline.value);
               
               return;
           }
