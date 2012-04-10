@@ -303,7 +303,7 @@ function Puff (/*Kinetic.Layer*/ layer, /*int*/ x, /*int*/ y) {
 }
 
 var SortOrderTrain = {
-    debug: true,
+    debug: false,
     /* Kinetic.Stage - the stage */
     stage: null,
     /* int level (default to lowest) */
