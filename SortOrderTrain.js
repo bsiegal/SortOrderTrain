@@ -140,8 +140,7 @@ function BoxCar(/*int*/ x, /*int*/ y, /*Kinetic.Layer*/ layer, /*Number or Alpha
              * remove group from the layer and add it to the
              * topLayer.  This will improve performance
              * because only one box car will be redrawn for each frame
-             * and not everything.  Also, turn off event listening
-             * on the boxLayer until dragend
+             * and not everything.  
              */
             group.on('mousedown touchstart', function(){
                 /*
@@ -157,7 +156,7 @@ function BoxCar(/*int*/ x, /*int*/ y, /*Kinetic.Layer*/ layer, /*Number or Alpha
                 var layer = this.getLayer();
                 group.moveTo(SortOrderTrain.topLayer);
                 group.draggable(true);
-                layer.listen(false);
+//                layer.listen(false); Leaving listening on since an accidental dblclick will cause the listen to stop and then dragging can never be resumed 
                 layer.draw();
                 SortOrderTrain.topLayer.draw();
             });
@@ -170,7 +169,7 @@ function BoxCar(/*int*/ x, /*int*/ y, /*Kinetic.Layer*/ layer, /*Number or Alpha
             group.on('dragend', function(){
                 group.moveTo(thiz.layer);
                 group.draggable(false);
-                thiz.layer.listen(true);
+//                thiz.layer.listen(true); No longer need this because never turning off
                 
                 /*
                  * If it is near an outline snap it into place
