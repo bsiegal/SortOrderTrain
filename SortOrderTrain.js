@@ -150,6 +150,7 @@ function BoxCar(/*int*/ x, /*int*/ y, /*Kinetic.Layer*/ layer, /*Number or Alpha
                 for (var i = 0; i < SortOrderTrain.outlns.length; i++) {
                     if (SortOrderTrain.outlns[i].value === value) {
                         SortOrderTrain.outlns[i].value = '?';
+                        break;
                     }
                 }
                 
