@@ -419,7 +419,7 @@ var SortOrderTrain = {
                 var context = this.getContext();
                 context.beginPath();
                 context.moveTo(100, 100); 
-                context.lineTo(750, 100)
+                context.lineTo(750, 100);
                 context.bezierCurveTo(750, 90, 480, 80, 275, 80); 
                 context.bezierCurveTo(510, 90, 500, 45, 375, 50); 
                 context.bezierCurveTo(500, 40, 150, 0, 208, 25); 
@@ -440,7 +440,7 @@ var SortOrderTrain = {
                 var context = this.getContext();
                 context.beginPath();
                 context.moveTo(375, 200); 
-                context.lineTo(950, 200) 
+                context.lineTo(950, 200);
                 context.bezierCurveTo(1000, 170, 520, 160, 750, 170);
                 context.bezierCurveTo(670, 110, 500, 150, 570, 140); 
                 context.bezierCurveTo(490, 100, 400, 185, 500, 165); 
@@ -459,7 +459,7 @@ var SortOrderTrain = {
                 var context = this.getContext();
                 context.beginPath();
                 context.moveTo(0, 250); 
-                context.lineTo(180, 250) 
+                context.lineTo(180, 250);
                 context.bezierCurveTo(170, 240, 140, 210, 110, 230);
                 context.bezierCurveTo(120, 220, 100, 180, 20, 210); 
                 context.bezierCurveTo(75, 200, 20, 185, 0, 190); 
